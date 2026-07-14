@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Note ❤️</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(-45deg, #ffdde1, #ee9ca7, #ffc1cc, #ee9ca7);
+            background-size: 400% 400%;
+            animation: gradientMove 12s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            color: #333;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .note-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+            animation: popIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            min-height: 140px;
+            text-align: left;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            background: #333;
+            margin-left: 2px;
+            animation: blink 0.8s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .buttons {
+            margin-top: 25px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .buttons.show {
+            opacity: 1;
+        }
+
+        .yes-btn, .no-btn {
+            padding: 12px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .yes-btn {
+            background-color: #28a745;
+            color: white;
+            animation: heartbeat 1.6s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .yes-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(40,167,69,0.6);
+        }
+
+        .no-btn {
+            background-color: #dc3545;
+            color: white;
+            position: relative;
+        }
+
+        /* Confetti hearts burst */
+        .confetti-piece {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            font-size: 1.5rem;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 1;
+            animation: burst 1.4s ease-out forwards;
+        }
+
+        @keyframes burst {
+            to {
+                transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        .yes-message {
+            margin-top: 20px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #28a745;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .music-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 5;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(6px);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        /* Ambient floating hearts */
+        .floating-hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: -10%;
+            font-size: 1.5rem;
+            opacity: 0;
+            animation: floatUp linear infinite;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 0 8px rgba(255,77,109,0.5);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.9; }
+            90% { opacity: 0.7; }
+            100% {
+                transform: translateY(-110vh) translateX(var(--drift, 40px)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Twinkling sparkles */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle 3s ease-in-out infinite;
+            box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="floating-hearts" id="floatingHearts"></div>
+    <button class="music-toggle" id="musicToggle" title="Play music">🔇</button>
+    <audio id="bgMusic" loop preload="auto" autoplay muted>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="note-box">
+        <h1>For My Queen ❤️</h1>
+
+        <p id="noteText"></p>
+
+        <div class="buttons" id="buttons">
+            <button class="yes-btn" onclick="yesClicked()">Yes 💍</button>
+            <button class="no-btn" onmouseover="moveButton()">No</button>
+        </div>
+
+        <div id="yesMessage" class="yes-message"></div>
+    </div>
+
+<script>
+    const fullText = "You mean a world to me my babbudi, I'm sorry if i have hurt you in any way, even you know how much i love you. I want you to be forever with me, and i want to make you the happiest person in the world. I love you so much my love, and i will always be there for you no matter what. Do you want to be with me forever my love? 💖";
+
+    const textEl = document.getElementById('noteText');
+    const buttonsEl = document.getElementById('buttons');
+    let i = 0;
+
+    function typeWriter() {
+        if (i < fullText.length) {
+            textEl.textContent = fullText.slice(0, i + 1);
+            i++;
+            setTimeout(typeWriter, 25);
+        } else {
+            buttonsEl.classList.add('show');
+        }
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(typeWriter, 400);
+    });
+
+    // Resume music where it left off on the previous page. It always
+    // starts muted (browsers block unmuted autoplay), then unmutes
+    // itself on the first click/tap/keypress so it feels "always on."
+    const musicBtn = document.getElementById('musicToggle');
+    const music = document.getElementById('bgMusic');
+    let playing = true;
+
+    // Generate ambient floating hearts + sparkles
+    const heartsContainer = document.getElementById('floatingHearts');
+    const heartSymbols = ['❤️', '💕', '💖', '💗'];
+
+    function spawnHeart() {
+        const el = document.createElement('div');
+        el.className = 'floating-heart';
+        el.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+        el.style.animationDuration = (8 + Math.random() * 6) + 's';
+        el.style.fontSize = (1 + Math.random() * 1.3) + 'rem';
+        heartsContainer.appendChild(el);
+        setTimeout(() => el.remove(), 15000);
+    }
+
+    function spawnSparkle() {
+        const el = document.createElement('div');
+        el.className = 'sparkle';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.top = Math.random() * 100 + 'vh';
+        el.style.animationDuration = (2 + Math.random() * 2) + 's';
+        heartsContainer.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+
+    setInterval(spawnHeart, 900);
+    setInterval(spawnSparkle, 500);
+    for (let i = 0; i < 6; i++) setTimeout(spawnHeart, i * 300);
+
+    const params = new URLSearchParams(window.location.search);
+    const resumeTime = parseFloat(params.get('t'));
+    const wasPlaying = params.get('play') === '1';
+    const wasMuted = params.get('muted') === '1';
+
+    music.addEventListener('loadedmetadata', () => {
+        if (!isNaN(resumeTime)) {
+            music.currentTime = resumeTime;
+        }
+        music.play().catch(() => { playing = false; });
+
+        // If it was already unmuted and playing on the previous page,
+        // carry that over so there's no extra click needed here.
+        if (wasPlaying && !wasMuted) {
+            music.muted = false;
+            musicBtn.textContent = '🔊';
+        }
+    });
+
+    function unmuteOnFirstInteraction() {
+        if (music.muted) {
+            music.muted = false;
+            if (music.paused) music.play().catch(() => {});
+            musicBtn.textContent = '🔊';
+            playing = true;
+        }
+        document.removeEventListener('click', unmuteOnFirstInteraction);
+        document.removeEventListener('touchstart', unmuteOnFirstInteraction);
+        document.removeEventListener('keydown', unmuteOnFirstInteraction);
+    }
+    document.addEventListener('click', unmuteOnFirstInteraction);
+    document.addEventListener('touchstart', unmuteOnFirstInteraction);
+    document.addEventListener('keydown', unmuteOnFirstInteraction);
+
+    musicBtn.addEventListener('click', () => {
+        if (music.muted) {
+            music.muted = false;
+            musicBtn.textContent = '🔊';
+            playing = true;
+            if (music.paused) music.play().catch(() => {});
+            return;
+        }
+        if (playing) {
+            music.pause();
+            musicBtn.textContent = '🔇';
+        } else {
+            music.play().catch(() => {});
+            musicBtn.textContent = '🔊';
+        }
+        playing = !playing;
+    });
+
+    function yesClicked() {
+        burstHearts();
+        const msg = document.getElementById('yesMessage');
+        msg.textContent = "I am the happiest person in the world my love, i am so grateful to have you in my life. I love you so much ❤️";
+    }
+
+    function burstHearts() {
+        const symbols = ['❤️', '💕', '💖', '💗', '✨'];
+        for (let n = 0; n < 40; n++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 150 + Math.random() * 250;
+            piece.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+            piece.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+            piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+            piece.style.fontSize = (1 + Math.random() * 1.2) + 'rem';
+            document.body.appendChild(piece);
+            setTimeout(() => piece.remove(), 1500);
+        }
+    }
+
+    function moveButton() {
+        const button = document.querySelector(".no-btn");
+        const maxX = window.innerWidth - button.offsetWidth;
+        const maxY = window.innerHeight - button.offsetHeight;
+        const randomX = Math.random() * maxX;
+        const randomY = Math.random() * maxY;
+        button.style.position = "fixed";
+        button.style.left = randomX + "px";
+        button.style.top = randomY + "px";
+    }
+</script>
+</body>
+</html>
